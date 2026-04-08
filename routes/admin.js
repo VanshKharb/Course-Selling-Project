@@ -92,7 +92,7 @@ adminRouter.post("/signin", async (req, res) => {
 
         const token = jwt.sign({
             id: response._id.toString()
-        }, JWT_ADMIN_PASSWORD);
+        }, JWT_ADMIN_PASSWORD, {expiresIn: "7d"});
 
         return res.json({
             token: token,
