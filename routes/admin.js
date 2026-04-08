@@ -64,7 +64,7 @@ adminRouter.post("/signin", async (req, res) => {
 
     if (!parsed.success) {
         return res.status(400).json({
-            message: "Incorrect email or password",
+            message: "Incorrect username or password",
             error: parsed.error,
         });
     }
@@ -78,7 +78,7 @@ adminRouter.post("/signin", async (req, res) => {
 
         if (!response) {
             return res.status(403).json({
-                message: "Incorrect email or password",
+                message: "Incorrect username or password",
             });
         }
 
@@ -86,7 +86,7 @@ adminRouter.post("/signin", async (req, res) => {
 
         if (!passwordMatch) {
             return res.status(403).json({
-                messasge: "Invalid username or password",
+                message: "Incorrect username or password",
             });
         }
 
@@ -126,22 +126,29 @@ adminRouter.post("/course", adminMiddleware, async (req, res) => {
 
     const { title, description, price, imageURL } = parsedContent.data;
 
-    const course = await courseModel.create({
-        title: title,
-        description: description,
-        price: price,
-        imageURL: imageURL,
-        creatorId: adminId,
-    });
+    try {
+        const course = await courseModel.create({
+            title: title,
+            description: description,
+            price: price,
+            imageURL: imageURL,
+            creatorId: adminId,
+        });
 
-    res.json({
-        message: "Course Created",
-        courseId: course._id,
-    });
+        res.json({
+            message: "Course Created",
+            courseId: course._id,
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal Server error",
+        });
+    }
 });
 
 adminRouter.put("/course", adminMiddleware, async (req, res) => {
-    const adminId = req.usedId;
+    const adminId = req.userId;
 
     const schema = z.object({
         title: z.string().max(20),
@@ -162,33 +169,47 @@ adminRouter.put("/course", adminMiddleware, async (req, res) => {
 
     const { title, description, imageURL, price, courseId } = parsedData.data;
 
-    const course = await courseModel.updateOne({
-        _id: courseId,
-        creatorId: adminId,
-    }, {
-        title: title,
-        description: description,
-        imageURL: imageURL,
-        price: price,
-    });
+    try {
+        const course = await courseModel.updateOne({
+            _id: courseId,
+            creatorId: adminId,
+        }, {
+            title: title,
+            description: description,
+            imageURL: imageURL,
+            price: price,
+        });
 
-    res.json({
-        message: "Course updated",
-        courseId: course._id,
-    });
+        res.json({
+            message: "Course updated",
+            courseId: courseId,
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal Server Error",
+        });
+    }
 });
 
 adminRouter.get("/course/bulk", adminMiddleware, async (req, res) => {
-    const adminId = req.usedId;
+    const adminId = req.userId;
 
-    const courses = await courseModel.find({
-        creatorId: adminId,
-    });
+    try {
+        const courses = await courseModel.find({
+            creatorId: adminId,
+        });
 
-    res.json({
-        message: "Course Updated",
-        courses,
-    });
+        res.json({
+            message: "List of the courses: ",
+            courses,
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 });
 
 module.exports = {
