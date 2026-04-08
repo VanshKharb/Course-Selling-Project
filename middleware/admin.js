@@ -4,14 +4,21 @@ const { JWT_ADMIN_PASSWORD } = require("../config");
 function adminMiddleware(req, res, next) {
     const token = req.headers.token;
 
-    const response = jwt.verify(token, JWT_ADMIN_PASSWORD);
+    try {
+        const response = jwt.verify(token, JWT_ADMIN_PASSWORD);
 
-    if (response) {
-        req.userId = response.id;
-        next();
+        if (response) {
+            req.userId = response.id;
+            next();
+        }
+        else {
+            return res.status(403).json({
+                message: "Incorrect creds",
+            });
+        }
     }
-    else {
-        res.status(403).json({
+    catch(e) {
+        return res.status(403).json({
             message: "Incorrect creds",
         });
     }
