@@ -1,29 +1,63 @@
 const { Router } = require("express");
 const courseRouter = Router();
-const { courseModel } = require("../db");
+const { courseModel, purchaseModel } = require("../db");
 const { userMiddleware } = require("../middleware/user");
-const { purchaseModel } = require("../db");
 
 courseRouter.post("/purchase", userMiddleware, async (req, res) => {
     const userId = req.userId;
-    const courseId = req.body.userId;
+    const courseId = req.body.courseId;
 
-    await purchaseModel.create({
-        userId,
-        courseId,
-    });
+    try {
+        const exist = await courseModel.findOne({
+            _id: courseId,
+        });
 
-    res.json({
-        message: "You have successfully bought the course",
-    });
+        if (!exist) {
+            return res.status(404).json({
+                message: "The course does not exist",
+            });
+        }
+
+        const response = await purchaseModel.findOne({
+            userId: userId,
+            courseId: courseId
+        });
+
+        if (response) {
+            return res.status(409).json({
+                message: "User has already bought the course",
+            });
+        }
+
+        await purchaseModel.create({
+            userId,
+            courseId,
+        });
+
+        res.json({
+            message: "You have successfully bought the course",
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 });
 
 courseRouter.get("/", async (req, res) => {
-    const courses = await courseModel.find({});
+    try {
+        const courses = await courseModel.find({});
 
-    res.json({
-        courses,
-    });
+        res.json({
+            courses,
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 });
 
 module.exports = {
