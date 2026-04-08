@@ -4,31 +4,33 @@ const Schema = mongoose.Schema;
 const ObjectId = mongoose.Types.ObjectId;
 
 const userSchema = new Schema({
-    email: { type: String, unique: true },
-    password: String,
-    firstName: String,
+    email: { type: String, unique: true , required: true},
+    password: {type: String, required: true},
+    firstName: {type: String, required: true},
     lastName: String,
-});
+}, {timestamps: true});
 
 const adminSchema = new Schema({
-    email: { type: String, unique: true},
-    password: String,
-    firstName: String,
+    email: { type: String, unique: true, required: true},
+    password: {type: String, required: true},
+    firstName: {type: String, required: true},
     lastName: String,
-});
+}, {timestamps: true});
 
 const courseSchema = new Schema({
-    title: String,
-    description: String,
-    price: Number,
+    title: {type: String, required: true},
+    description: {type: String, required: true},
+    price: {type: Number, required: true},
     imageURL: String,
-    creatorId: ObjectId
-});
+    creatorId: {type: ObjectId, required: true},
+}, {timestamps: true});
 
 const purchaseSchema = new Schema({
-    userId: ObjectId,
-    courseId: ObjectId,
-});
+    userId: {type: ObjectId, required: true},
+    courseId: {type: ObjectId, required: true},
+}, {timestamps: true});
+
+purchaseSchema.index({ userId: 1, courseId: 1 }, { unique: true });
 
 const userModel = mongoose.model("user", userSchema);
 const adminModel = mongoose.model("admin", adminSchema);
