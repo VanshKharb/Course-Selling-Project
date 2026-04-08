@@ -48,7 +48,7 @@ userRouter.post("/signup", async (req, res) => {
         }
         else {
             res.status(500).json({
-                message: "Internal sever error",
+                message: "Internal server error",
             });
         }
     }
@@ -85,7 +85,7 @@ userRouter.post("/signin", async (req, res) => {
 
         if (!passwordMatch) {
             return res.status(403).json({
-                messasge: "Invalid username or password",
+                message: "Incorrect username or password",
             });
         }
 
@@ -107,18 +107,25 @@ userRouter.post("/signin", async (req, res) => {
 userRouter.get("/purchases", userMiddleware, async (req, res) => {
     const userId = req.userId;
 
-    const purchases = await purchaseModel.find({
-        userId,
-    });
+    try {
+        const purchases = await purchaseModel.find({
+            userId,
+        });
 
-    const courseData = await courseModel.find({
-        _id: { $in: purchases.map(x => x.courseId) }
-    })
+        const courseData = await courseModel.find({
+            _id: { $in: purchases.map(x => x.courseId) }
+        })
 
-    res.json({
-        purchases,
-        courseData,
-    });
+        res.json({
+            purchases,
+            courseData,
+        });
+    }
+    catch(e) {
+        return res.status(500).json({
+            message: "Internal server error",
+        });
+    }
 });
 
 module.exports = {
