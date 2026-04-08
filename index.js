@@ -12,8 +12,15 @@ app.use("/api/v1/admin", adminRouter);
 app.use("/api/v1/course", courseRouter);
 
 async function main() {
-    await mongoose.connect(process.env.MONGO_URL);
-    app.listen(3000);
+    try {
+        await mongoose.connect(process.env.MONGO_URL);
+        app.listen(3000, () => {
+            console.log("Server running on port 3000");
+        });
+    }
+    catch(e) {
+        console.error(`Failed to connect to database: ${e.message}`);
+    }
 }
 
 main();
